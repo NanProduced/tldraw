@@ -314,13 +314,6 @@ export {
 	type TLMindMapNodeShape,
 	type TLMindMapNodeShapeProps,
 } from './shapes/TLMindMapNodeShape'
-export {
-	mindMapEdgeShapeMigrations,
-	mindMapEdgeShapeProps,
-	mindMapEdgeShapeVersions,
-	type TLMindMapEdgeShape,
-	type TLMindMapEdgeShapeProps,
-} from './shapes/TLMindMapEdgeShape'
 export { EnumStyleProp, StyleProp, type StylePropValue } from './styles/StyleProp'
 export {
 	DefaultColorStyle,
