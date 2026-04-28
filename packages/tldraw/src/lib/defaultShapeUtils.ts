@@ -10,6 +10,7 @@ import { LineShapeUtil } from './shapes/line/LineShapeUtil'
 import { NoteShapeUtil } from './shapes/note/NoteShapeUtil'
 import { TextShapeUtil } from './shapes/text/TextShapeUtil'
 import { VideoShapeUtil } from './shapes/video/VideoShapeUtil'
+import { MindMapNodeShapeUtil } from './shapes/mindmap-node/MindMapNodeShapeUtil'
 
 /** @public */
 export const defaultShapeUtils = [
@@ -25,4 +26,5 @@ export const defaultShapeUtils = [
 	EmbedShapeUtil,
 	ImageShapeUtil,
 	VideoShapeUtil,
+	MindMapNodeShapeUtil,
 ] as const
