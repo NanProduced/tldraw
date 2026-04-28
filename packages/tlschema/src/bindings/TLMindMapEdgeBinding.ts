@@ -22,8 +22,6 @@ export const mindMapEdgeBindingVersions = createBindingPropsMigrationIds('mindma
 	InitialVersion: 1,
 })
 
-export { mindMapEdgeBindingVersions as mindMapEdgeBindingVersions }
-
 export const mindMapEdgeBindingMigrations = createBindingPropsMigrationSequence({
 	sequence: [
 		{
