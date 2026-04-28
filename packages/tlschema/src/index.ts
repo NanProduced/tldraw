@@ -48,6 +48,13 @@ export {
 	type TLArrowBindingProps,
 } from './bindings/TLArrowBinding'
 export {
+	mindMapEdgeBindingMigrations,
+	mindMapEdgeBindingProps,
+	mindMapEdgeBindingVersions,
+	type TLMindMapEdgeBinding,
+	type TLMindMapEdgeBindingProps,
+} from './bindings/TLMindMapEdgeBinding'
+export {
 	bindingIdValidator,
 	createBindingValidator,
 	type TLBaseBinding,
@@ -299,6 +306,21 @@ export {
 	type TLVideoShape,
 	type TLVideoShapeProps,
 } from './shapes/TLVideoShape'
+export {
+	MindMapNodeColorScheme,
+	mindMapNodeShapeMigrations,
+	mindMapNodeShapeProps,
+	mindMapNodeShapeVersions,
+	type TLMindMapNodeShape,
+	type TLMindMapNodeShapeProps,
+} from './shapes/TLMindMapNodeShape'
+export {
+	mindMapEdgeShapeMigrations,
+	mindMapEdgeShapeProps,
+	mindMapEdgeShapeVersions,
+	type TLMindMapEdgeShape,
+	type TLMindMapEdgeShapeProps,
+} from './shapes/TLMindMapEdgeShape'
 export { EnumStyleProp, StyleProp, type StylePropValue } from './styles/StyleProp'
 export {
 	DefaultColorStyle,

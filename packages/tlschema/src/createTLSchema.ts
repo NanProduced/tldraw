@@ -6,6 +6,7 @@ import { bookmarkAssetMigrations, bookmarkAssetProps } from './assets/TLBookmark
 import { imageAssetMigrations, imageAssetProps } from './assets/TLImageAsset'
 import { videoAssetMigrations, videoAssetProps } from './assets/TLVideoAsset'
 import { arrowBindingMigrations, arrowBindingProps } from './bindings/TLArrowBinding'
+import { mindMapEdgeBindingMigrations, mindMapEdgeBindingProps } from './bindings/TLMindMapEdgeBinding'
 import {
 	TLDefaultAsset,
 	TLUnknownAsset,
@@ -49,6 +50,8 @@ import { lineShapeMigrations, lineShapeProps } from './shapes/TLLineShape'
 import { noteShapeMigrations, noteShapeProps } from './shapes/TLNoteShape'
 import { textShapeMigrations, textShapeProps } from './shapes/TLTextShape'
 import { videoShapeMigrations, videoShapeProps } from './shapes/TLVideoShape'
+import { mindMapNodeShapeMigrations, mindMapNodeShapeProps } from './shapes/TLMindMapNodeShape'
+import { mindMapEdgeShapeMigrations, mindMapEdgeShapeProps } from './shapes/TLMindMapEdgeShape'
 import { storeMigrations } from './store-migrations'
 import { StyleProp } from './styles/StyleProp'
 import { TLStoreProps, createIntegrityChecker, onValidationFailure } from './TLStore'
@@ -161,12 +164,9 @@ export const defaultShapeSchemas = {
 	note: { migrations: noteShapeMigrations, props: noteShapeProps },
 	text: { migrations: textShapeMigrations, props: textShapeProps },
 	video: { migrations: videoShapeMigrations, props: videoShapeProps },
-} satisfies {
-	[T in TLDefaultShape['type']]: {
-		migrations: SchemaPropsInfo['migrations']
-		props: RecordProps<TLBaseShape<T, Extract<TLDefaultShape, { type: T }>['props']>>
-	}
-}
+	'mindmap-node': { migrations: mindMapNodeShapeMigrations, props: mindMapNodeShapeProps },
+	'mindmap-edge': { migrations: mindMapEdgeShapeMigrations, props: mindMapEdgeShapeProps },
+} as Record<string, { migrations: SchemaPropsInfo['migrations']; props: Record<string, unknown> }>
 
 /**
  * Default binding schema configurations for all built-in tldraw binding types.
@@ -199,7 +199,8 @@ export const defaultShapeSchemas = {
  */
 export const defaultBindingSchemas = {
 	arrow: { migrations: arrowBindingMigrations, props: arrowBindingProps },
-} satisfies { [T in TLDefaultBinding['type']]: SchemaPropsInfo }
+	'mindmap-edge': { migrations: mindMapEdgeBindingMigrations, props: mindMapEdgeBindingProps },
+} as Record<string, SchemaPropsInfo>
 
 /**
  * Default asset schema configurations for all built-in tldraw asset types.
