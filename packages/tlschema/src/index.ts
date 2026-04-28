@@ -288,6 +288,13 @@ export {
 	type TLNoteShapeProps,
 } from './shapes/TLNoteShape'
 export {
+	cardStackShapeMigrations,
+	cardStackShapeProps,
+	cardStackShapeVersions,
+	type TLCardStackShape,
+	type TLCardStackShapeProps,
+} from './shapes/TLCardStackShape'
+export {
 	textShapeMigrations,
 	textShapeProps,
 	type TLTextShape,

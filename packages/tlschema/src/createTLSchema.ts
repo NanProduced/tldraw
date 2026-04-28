@@ -46,6 +46,7 @@ import { groupShapeMigrations, groupShapeProps } from './shapes/TLGroupShape'
 import { highlightShapeMigrations, highlightShapeProps } from './shapes/TLHighlightShape'
 import { imageShapeMigrations, imageShapeProps } from './shapes/TLImageShape'
 import { lineShapeMigrations, lineShapeProps } from './shapes/TLLineShape'
+import { cardStackShapeMigrations, cardStackShapeProps } from './shapes/TLCardStackShape'
 import { noteShapeMigrations, noteShapeProps } from './shapes/TLNoteShape'
 import { textShapeMigrations, textShapeProps } from './shapes/TLTextShape'
 import { videoShapeMigrations, videoShapeProps } from './shapes/TLVideoShape'
@@ -150,6 +151,7 @@ export type TLSchema = StoreSchema<TLRecord, TLStoreProps>
 export const defaultShapeSchemas = {
 	arrow: { migrations: arrowShapeMigrations, props: arrowShapeProps },
 	bookmark: { migrations: bookmarkShapeMigrations, props: bookmarkShapeProps },
+	'card-stack': { migrations: cardStackShapeMigrations, props: cardStackShapeProps },
 	draw: { migrations: drawShapeMigrations, props: drawShapeProps },
 	embed: { migrations: embedShapeMigrations, props: embedShapeProps },
 	frame: { migrations: frameShapeMigrations, props: frameShapeProps },
