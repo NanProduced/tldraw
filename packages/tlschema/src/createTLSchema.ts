@@ -51,7 +51,6 @@ import { noteShapeMigrations, noteShapeProps } from './shapes/TLNoteShape'
 import { textShapeMigrations, textShapeProps } from './shapes/TLTextShape'
 import { videoShapeMigrations, videoShapeProps } from './shapes/TLVideoShape'
 import { mindMapNodeShapeMigrations, mindMapNodeShapeProps } from './shapes/TLMindMapNodeShape'
-import { mindMapEdgeShapeMigrations, mindMapEdgeShapeProps } from './shapes/TLMindMapEdgeShape'
 import { storeMigrations } from './store-migrations'
 import { StyleProp } from './styles/StyleProp'
 import { TLStoreProps, createIntegrityChecker, onValidationFailure } from './TLStore'
@@ -165,7 +164,6 @@ export const defaultShapeSchemas = {
 	text: { migrations: textShapeMigrations, props: textShapeProps },
 	video: { migrations: videoShapeMigrations, props: videoShapeProps },
 	'mindmap-node': { migrations: mindMapNodeShapeMigrations, props: mindMapNodeShapeProps },
-	'mindmap-edge': { migrations: mindMapEdgeShapeMigrations, props: mindMapEdgeShapeProps },
 } as Record<string, { migrations: SchemaPropsInfo['migrations']; props: Record<string, unknown> }>
 
 /**

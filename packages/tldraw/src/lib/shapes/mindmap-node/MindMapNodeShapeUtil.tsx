@@ -40,6 +40,7 @@ import {
 	mindMapNodeShapeMigrations,
 	mindMapNodeShapeProps,
 } from '@tldraw/tlschema'
+import { getMindMapEdgePath } from '../../bindings/mindmap-edge/MindMapEdgeBindingUtil'
 import { isEmptyRichText, renderPlaintextFromRichText } from '../../utils/text/richText'
 
 const COLOR_SCHEMES: Record<string, string[]> = {
@@ -259,8 +260,15 @@ export class MindMapNodeShapeUtil extends BaseBoxShapeUtil<TLMindMapNodeShape> {
 		const isEmpty = isEmptyRichText(richText)
 		const showHtmlContainer = isReadyForEditing || !isEmpty
 
-		const children = this.getChildNodes(shape.id)
+		const bindings = editor.getBindingsFromShape(shape.id, 'mindmap-edge')
+		const children = bindings
+			.map((b) => editor.getShape<TLMindMapNodeShape>(b.toId))
+			.filter((s): s is TLMindMapNodeShape => s !== undefined && s.type === 'mindmap-node')
 		const hasChildren = children.length > 0
+
+		const pageBounds = editor.getShapePageBounds(shape.id)
+		const offsetX = pageBounds ? -pageBounds.minX : 0
+		const offsetY = pageBounds ? -pageBounds.minY : 0
 
 		return (
 			<>
@@ -272,6 +280,30 @@ export class MindMapNodeShapeUtil extends BaseBoxShapeUtil<TLMindMapNodeShape> {
 						fillColor={dv.fillColor}
 						forceSolid={isForceSolid}
 					/>
+					{bindings.map((binding) => {
+						const childShape = editor.getShape(binding.toId)
+						if (!childShape) return null
+
+						const edgePath = getMindMapEdgePath(
+							editor,
+							shape,
+							childShape,
+							binding.props.parentAnchor,
+							binding.props.childAnchor
+						)
+
+						return (
+							<g transform={`translate(${offsetX}, ${offsetY})`} key={binding.id}>
+								<path
+									d={edgePath.path}
+									stroke={dv.strokeColor}
+									strokeWidth={Math.max(dv.strokeWidth, 2)}
+									fill="none"
+									strokeLinecap="round"
+								/>
+							</g>
+						)
+					})}
 				</SVGContainer>
 
 				{showHtmlContainer && (
