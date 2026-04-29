@@ -305,9 +305,6 @@ const overrides: TLUiOverrides = {
 				kbd: 'l',
 				readonlyOk: true,
 				onSelect() {
-					const state = $presentationState.get()
-					if (!state.isActive) return
-
 					toggleFrameList()
 				},
 			},
