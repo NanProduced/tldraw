@@ -1,7 +1,6 @@
 import {
-	CenteredTopPanelContainer,
-	DefaultToolbar,
-	DefaultToolbarContent,
+	DefaultHelperButtons,
+	DefaultHelperButtonsContent,
 	TLComponents,
 	TLUiOverrides,
 	Tldraw,
@@ -34,18 +33,12 @@ import {
 } from './usePresentationMode'
 
 const components: TLComponents = {
-	Toolbar: (props) => {
+	HelperButtons: (props) => {
 		return (
-			<DefaultToolbar {...props}>
-				<DefaultToolbarContent />
-			</DefaultToolbar>
-		)
-	},
-	TopPanel: () => {
-		return (
-			<CenteredTopPanelContainer>
+			<DefaultHelperButtons {...props}>
 				<PresentationModeButton />
-			</CenteredTopPanelContainer>
+				<DefaultHelperButtonsContent />
+			</DefaultHelperButtons>
 		)
 	},
 	InFrontOfTheCanvas: () => {
