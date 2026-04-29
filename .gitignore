@@ -133,3 +133,5 @@ opencode.json
 .claude/skills/pr-walkthrough/video/public/audio-*
 .claude/skills/pr-walkthrough/video/public/manifest.json
 todo.md
+
+.playwright-mcp/
