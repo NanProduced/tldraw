@@ -10,6 +10,7 @@ import * as React from 'react'
 import { useState } from 'react'
 import {
 	$presentationState,
+	createNewFrame,
 	getFramesWithOrder,
 	goToFrame,
 	toggleFrameList,
@@ -25,7 +26,8 @@ export const FrameListDrawer = track(() => {
 	const [draggedFrameId, setDraggedFrameId] = useState<string | null>(null)
 	const [dragOverFrameId, setDragOverFrameId] = useState<string | null>(null)
 
-	if (!state.isActive || !state.showFrameList) return null
+	const shouldShow = state.isActive
+	if (!shouldShow && !state.showFrameList) return null
 
 	const handleDragStart = (e: React.DragEvent, frameId: string) => {
 		setDraggedFrameId(frameId)
@@ -77,6 +79,10 @@ export const FrameListDrawer = track(() => {
 		setDragOverFrameId(null)
 	}
 
+	const handleCreateFrame = () => {
+		createNewFrame(editor)
+	}
+
 	return (
 		<div
 			className="tlui-presentation-frame-list"
@@ -84,13 +90,22 @@ export const FrameListDrawer = track(() => {
 		>
 			<div className="tlui-presentation-frame-list__header">
 				<span className="tlui-presentation-frame-list__title">Frames</span>
-				<TldrawUiButton
-					type="icon"
-					onClick={() => toggleFrameList()}
-					className="tlui-presentation-frame-list__close"
-				>
-					<TldrawUiButtonIcon icon="cross" />
-				</TldrawUiButton>
+				<div className="tlui-presentation-frame-list__header-actions">
+					<TldrawUiButton
+						type="icon"
+						onClick={handleCreateFrame}
+						title="New Frame"
+					>
+						<TldrawUiButtonIcon icon="plus" />
+					</TldrawUiButton>
+					<TldrawUiButton
+						type="icon"
+						onClick={() => toggleFrameList()}
+						className="tlui-presentation-frame-list__close"
+					>
+						<TldrawUiButtonIcon icon="cross" />
+					</TldrawUiButton>
+				</div>
 			</div>
 			<div className="tlui-presentation-frame-list__content">
 				{frames.map((frame, index) => {
@@ -113,7 +128,11 @@ export const FrameListDrawer = track(() => {
 							onDragLeave={handleDragLeave}
 							onDrop={(e) => handleDrop(e, shape.id)}
 							onDragEnd={handleDragEnd}
-							onClick={() => goToFrame(editor, shape.id)}
+							onClick={() => {
+								if (state.isActive) {
+									goToFrame(editor, shape.id)
+								}
+							}}
 						>
 							<div className="tlui-presentation-frame-list__item-index">
 								{index + 1}

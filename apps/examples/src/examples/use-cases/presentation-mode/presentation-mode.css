@@ -1,12 +1,3 @@
-.tlui-presentation-top-panel {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	padding: 4px 8px;
-	background-color: var(--tl-color-low);
-	border-bottom: 1px solid var(--tl-color-panel-border);
-}
-
 .tlui-presentation-mode-button {
 	display: flex;
 	align-items: center;
@@ -23,6 +14,14 @@
 .tlui-presentation-mode-button__label {
 	font-size: 12px;
 	font-weight: 500;
+}
+
+.tlui-presentation-mode .tlui-layout__bottom__main > .tlui-toolbar,
+.tlui-presentation-mode .tlui-minimap,
+.tlui-presentation-mode .tlui-navigation-panel,
+.tlui-presentation-mode .tlui-layout__top__right,
+.tlui-presentation-mode .tlui-layout__top__left > .tlui-menu-panel {
+	display: none !important;
 }
 
 .tlui-presentation-frame-list {
@@ -54,6 +53,12 @@
 	font-size: 12px;
 	font-weight: 600;
 	color: var(--tl-color-text);
+}
+
+.tlui-presentation-frame-list__header-actions {
+	display: flex;
+	align-items: center;
+	gap: 4px;
 }
 
 .tlui-presentation-frame-list__close {

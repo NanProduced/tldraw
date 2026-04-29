@@ -147,6 +147,8 @@ export function startPresentation(editor: Editor) {
 
 		zoomToFrame(editor, firstFrame)
 	})
+
+	document.body.classList.add('tlui-presentation-mode')
 }
 
 export function stopPresentation(editor: Editor) {
@@ -159,6 +161,8 @@ export function stopPresentation(editor: Editor) {
 		selectedBranch: null,
 		pendingBranches: [],
 	})
+
+	document.body.classList.remove('tlui-presentation-mode')
 }
 
 export function nextFrame(editor: Editor) {
@@ -274,7 +278,6 @@ export function toggleScreenMode(editor: Editor, mode: PresentationScreenMode) {
 
 export function toggleNotes() {
 	const state = $presentationState.get()
-	if (!state.isActive) return
 
 	$presentationState.set({
 		...state,
@@ -284,7 +287,6 @@ export function toggleNotes() {
 
 export function toggleFrameList() {
 	const state = $presentationState.get()
-	if (!state.isActive) return
 
 	$presentationState.set({
 		...state,
@@ -306,6 +308,28 @@ export function goToFrame(editor: Editor, frameId: TLShapeId) {
 	})
 
 	zoomToFrame(editor, frame)
+}
+
+export function createNewFrame(editor: Editor): TLShapeId {
+	const viewportBounds = editor.getViewportPageBounds()
+	const centerX = viewportBounds.center.x
+	const centerY = viewportBounds.center.y
+
+	const frames = getFramesWithOrder(editor)
+	const maxOrder = frames.length > 0 ? Math.max(...frames.map((f) => (f.shape.meta as FrameMeta)?.presentationOrder ?? 0)) : 0
+
+	const frameId = editor.createShape({
+		type: 'frame',
+		x: centerX - 160,
+		y: centerY - 90,
+		props: { w: 320, h: 180, name: '', color: 'black' },
+		meta: {
+			presentationOrder: maxOrder + 1,
+			note: '',
+		} as FrameMeta,
+	})
+
+	return frameId
 }
 
 export function getCurrentFrameNote(editor: Editor): string {
