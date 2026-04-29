@@ -11,7 +11,7 @@ import {
 	TldrawUiInput,
 	type TLUiDialogProps,
 } from 'tldraw'
-import { addComponent, serializeSelectedShapes } from './componentLibraryStore'
+import { addComponent } from './componentLibraryStore'
 
 export const SaveComponentDialog = track(function SaveComponentDialog({
 	onClose,
@@ -30,13 +30,19 @@ export const SaveComponentDialog = track(function SaveComponentDialog({
 	}, [onClose])
 
 	const handleSave = useCallback(() => {
-		const shapes = serializeSelectedShapes(editor)
-		if (shapes.length === 0) {
+		const selectedShapeIds = editor.getSelectedShapeIds()
+		if (selectedShapeIds.length === 0) {
 			onClose()
 			return
 		}
 
-		addComponent(name || `Component ${Date.now()}`, shapes)
+		const content = editor.getContentFromCurrentPage(selectedShapeIds)
+		if (!content) {
+			onClose()
+			return
+		}
+
+		addComponent(name || `Component ${Date.now()}`, content)
 		onClose()
 	}, [editor, name, onClose])
 

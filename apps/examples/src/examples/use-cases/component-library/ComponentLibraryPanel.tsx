@@ -1,44 +1,28 @@
-import { useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import {
-	Box,
 	TldrawUiButton,
 	TldrawUiButtonIcon,
 	TldrawUiInput,
-	Vec,
-	useAtom,
 	useEditor,
-	useQuickReactor,
-	useValue,
 } from 'tldraw'
-import { ComponentLibraryItem, deleteComponent, getAllComponents, instantiateComponent } from './componentLibraryStore'
+import {
+	ComponentLibraryItem,
+	DefaultKpiCardConfig,
+	deleteComponent,
+	getAllComponents,
+	getComponentLibrary,
+	getDefaultComponents,
+	instantiateComponent,
+} from './componentLibraryStore'
 import './component-library.css'
 
-type DragState =
-	| {
-			name: 'idle'
-	  }
-	| {
-			name: 'pointing_item'
-			item: ComponentLibraryItem
-			startPosition: Vec
-	  }
-	| {
-			name: 'dragging'
-			item: ComponentLibraryItem
-			currentPosition: Vec
-	  }
+const DRAG_DATA_FORMAT = 'application/x-tldraw-component-id'
 
 export function ComponentLibraryPanel() {
-	const rPanelContainer = useRef<HTMLDivElement>(null)
-	const rDraggingImage = useRef<HTMLDivElement>(null)
 	const [searchQuery, setSearchQuery] = useState('')
 	const [refreshKey, setRefreshKey] = useState(0)
 
 	const editor = useEditor()
-
-	const dragState = useAtom<DragState>('dragState', () => ({
-		name: 'idle',
-	}))
 
 	const allComponents = useMemo(() => {
 		return getAllComponents()
@@ -64,243 +48,117 @@ export function ComponentLibraryPanel() {
 		}
 	}
 
-	const { handlePointerUp, handlePointerDown } = useMemo(() => {
-		let target: HTMLDivElement | null = null
+	const handleDragStart = useCallback(
+		(e: React.DragEvent, item: ComponentLibraryItem) => {
+			e.dataTransfer.setData(DRAG_DATA_FORMAT, item.id)
+			e.dataTransfer.effectAllowed = 'copy'
 
-		function handlePointerMove(e: PointerEvent) {
-			const current = dragState.get()
-			const screenPoint = new Vec(e.clientX, e.clientY)
-
-			switch (current.name) {
-				case 'idle': {
-					break
-				}
-				case 'pointing_item': {
-					const dist = Vec.Dist(screenPoint, current.startPosition)
-					if (dist > 10) {
-						dragState.set({
-							name: 'dragging',
-							item: current.item,
-							currentPosition: screenPoint,
-						})
-					}
-					break
-				}
-				case 'dragging': {
-					dragState.set({
-						...current,
-						currentPosition: screenPoint,
-					})
-					break
-				}
-			}
-		}
-
-		function handlePointerUp(e: React.PointerEvent) {
-			const current = dragState.get()
-
-			target = e.currentTarget as HTMLDivElement
-			target.releasePointerCapture(e.pointerId)
-
-			switch (current.name) {
-				case 'idle': {
-					break
-				}
-				case 'pointing_item': {
-					dragState.set({ name: 'idle' })
-					break
-				}
-				case 'dragging': {
-					const screenPoint = new Vec(e.clientX, e.clientY)
-					const pagePoint = editor.screenToPage(screenPoint)
-
-					const panelContainer = rPanelContainer.current
-					if (panelContainer) {
-						const panelRect = panelContainer.getBoundingClientRect()
-						const box = new Box(panelRect.x, panelRect.y, panelRect.width, panelRect.height)
-						const isInsidePanel = Box.ContainsPoint(box, screenPoint)
-
-						if (!isInsidePanel) {
-							instantiateComponent(editor, current.item, pagePoint.x, pagePoint.y)
-						}
-					}
-
-					dragState.set({ name: 'idle' })
-					break
-				}
-			}
-
-			removeEventListeners()
-		}
-
-		function handlePointerDown(e: React.PointerEvent) {
-			e.preventDefault()
-			target = e.currentTarget as HTMLDivElement
-			target.setPointerCapture(e.pointerId)
-
-			const itemIndex = target.dataset.component_index
-			if (!itemIndex) return
-
-			const item = filteredComponents[+itemIndex]
-			if (!item) return
-
-			const startPosition = new Vec(e.clientX, e.clientY)
-
-			dragState.set({
-				name: 'pointing_item',
-				item,
-				startPosition,
-			})
-
-			target.addEventListener('pointermove', handlePointerMove)
-			document.addEventListener('keydown', handleKeyDown)
-		}
-
-		function handleKeyDown(e: KeyboardEvent) {
-			const current = dragState.get()
-			if (e.key === 'Escape' && current.name === 'dragging') {
-				removeEventListeners()
-			}
-		}
-
-		function removeEventListeners() {
-			if (target) {
-				target.removeEventListener('pointermove', handlePointerMove)
-				document.removeEventListener('keydown', handleKeyDown)
-			}
-			dragState.set({ name: 'idle' })
-		}
-
-		return {
-			handlePointerDown,
-			handlePointerUp,
-		}
-	}, [dragState, editor, filteredComponents])
-
-	const state = useValue('dragState', () => dragState.get(), [dragState])
-
-	useQuickReactor(
-		'drag-image-style',
-		() => {
-			const current = dragState.get()
-			const imageRef = rDraggingImage.current
-			const panelContainerRef = rPanelContainer.current
-			if (!imageRef || !panelContainerRef) return
-
-			switch (current.name) {
-				case 'idle':
-				case 'pointing_item': {
-					imageRef.style.display = 'none'
-					break
-				}
-				case 'dragging': {
-					const panelContainerRect = panelContainerRef.getBoundingClientRect()
-					const box = new Box(
-						panelContainerRect.x,
-						panelContainerRect.y,
-						panelContainerRect.width,
-						panelContainerRect.height
-					)
-					const viewportScreenBounds = editor.getViewportScreenBounds()
-					const isInside = Box.ContainsPoint(box, current.currentPosition)
-
-					if (isInside) {
-						imageRef.style.display = 'none'
-					} else {
-						imageRef.style.display = 'block'
-						imageRef.style.position = 'absolute'
-						imageRef.style.pointerEvents = 'none'
-						imageRef.style.left = '0px'
-						imageRef.style.top = '0px'
-						imageRef.style.transform = `translate(${current.currentPosition.x - viewportScreenBounds.x - 50}px, ${current.currentPosition.y - viewportScreenBounds.y - 40}px)`
-						imageRef.style.width = '100px'
-						imageRef.style.height = '80px'
-					}
-				}
-			}
+			const img = new Image()
+			img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7'
+			e.dataTransfer.setDragImage(img, 0, 0)
 		},
-		[dragState]
+		[]
 	)
 
+	useEffect(() => {
+		const container = editor.getContainer()
+		if (!container) return
+
+		const handleDragOver = (e: DragEvent) => {
+			const hasComponentId = e.dataTransfer?.types.includes(DRAG_DATA_FORMAT)
+			if (hasComponentId) {
+				e.preventDefault()
+				e.dataTransfer!.dropEffect = 'copy'
+			}
+		}
+
+		const handleDrop = (e: DragEvent) => {
+			const componentId = e.dataTransfer?.getData(DRAG_DATA_FORMAT)
+			if (!componentId) return
+
+			e.preventDefault()
+			e.stopPropagation()
+
+			const component = [...getDefaultComponents(), ...getComponentLibrary()].find((c) => c.id === componentId)
+			if (!component) return
+
+			const pagePoint = editor.screenToPage({ x: e.clientX, y: e.clientY })
+			instantiateComponent(editor, component, pagePoint)
+		}
+
+		container.addEventListener('dragover', handleDragOver, true)
+		container.addEventListener('drop', handleDrop, true)
+
+		return () => {
+			container.removeEventListener('dragover', handleDragOver, true)
+			container.removeEventListener('drop', handleDrop, true)
+		}
+	}, [editor])
+
 	return (
-		<>
-			<div ref={rPanelContainer} className="component-library-panel">
-				<div className="component-library-header">
-					<h3>Component Library</h3>
-				</div>
+		<div className="component-library-panel">
+			<div className="component-library-header">
+				<h3>Component Library</h3>
+			</div>
 
-				<div className="component-library-search">
-					<TldrawUiInput
-						placeholder="Search components..."
-						value={searchQuery}
-						onChange={(value) => setSearchQuery(value)}
-						icon="search"
-					/>
-				</div>
+			<div className="component-library-search">
+				<TldrawUiInput
+					placeholder="Search components..."
+					value={searchQuery}
+					onChange={(value) => setSearchQuery(value)}
+					icon="search"
+				/>
+			</div>
 
-				<div className="component-library-grid">
-					{filteredComponents.map((item, index) => (
-						<div
-							key={item.id}
-							className="component-card"
-							data-component_index={index}
-							onPointerDown={handlePointerDown}
-							onPointerUp={handlePointerUp}
-							title={`Drag "${item.name}" to canvas`}
-						>
-							<div className="component-card-preview">
-								<div className="component-card-preview-content">
-									{item.shapes[0]?.type === 'kpi-card' ? (
-										<KpiCardPreview shape={item.shapes[0] as any} />
-									) : (
-										<GenericPreview item={item} />
-									)}
-								</div>
-							</div>
-							<div className="component-card-footer">
-								<span className="component-card-name">{item.name}</span>
-								{!isDefaultComponent(item) && (
-									<TldrawUiButton
-										type="icon"
-										className="component-card-delete"
-										title="Delete component"
-										onClick={(e) => handleDelete(e, item)}
-									>
-										<TldrawUiButtonIcon icon="trash" />
-									</TldrawUiButton>
+			<div className="component-library-grid">
+				{filteredComponents.map((item) => (
+					<div
+						key={item.id}
+						className="component-card"
+						draggable
+						onDragStart={(e) => handleDragStart(e, item)}
+						title={`Drag "${item.name}" to canvas`}
+					>
+						<div className="component-card-preview">
+							<div className="component-card-preview-content">
+								{item.isDefault && item.defaultConfig ? (
+									<KpiCardPreview config={item.defaultConfig} />
+								) : (
+									<GenericPreview item={item} />
 								)}
 							</div>
 						</div>
-					))}
+						<div className="component-card-footer">
+							<span className="component-card-name">{item.name}</span>
+							{!isDefaultComponent(item) && (
+								<TldrawUiButton
+									type="icon"
+									className="component-card-delete"
+									title="Delete component"
+									onClick={(e) => handleDelete(e, item)}
+								>
+									<TldrawUiButtonIcon icon="trash" />
+								</TldrawUiButton>
+							)}
+						</div>
+					</div>
+				))}
+			</div>
+
+			{filteredComponents.length === 0 && (
+				<div className="component-library-empty">
+					<p>{searchQuery ? 'No matching components' : 'No saved components'}</p>
+					<p className="component-library-hint">
+						Select shapes and use "Save as Component" in the context menu
+					</p>
 				</div>
-
-				{filteredComponents.length === 0 && (
-					<div className="component-library-empty">
-						<p>{searchQuery ? 'No matching components' : 'No saved components'}</p>
-						<p className="component-library-hint">
-							Select shapes and use "Save as Component" in the context menu
-						</p>
-					</div>
-				)}
-			</div>
-
-			<div ref={rDraggingImage} className="component-drag-preview">
-				{state.name === 'dragging' && (
-					<div className="component-drag-preview-content">
-						{state.item.shapes[0]?.type === 'kpi-card' ? (
-							<KpiCardPreview shape={state.item.shapes[0] as any} />
-						) : (
-							<GenericPreview item={state.item} />
-						)}
-					</div>
-				)}
-			</div>
-		</>
+			)}
+		</div>
 	)
 }
 
-function KpiCardPreview({ shape }: { shape: { props: any } }) {
-	const { title, value, trend, trendValue, color } = shape.props
+function KpiCardPreview({ config }: { config: DefaultKpiCardConfig }) {
+	const { title, value, trend, trendValue, color } = config
 
 	let trendColor = '#6b7280'
 	let trendIcon = '—'
@@ -348,7 +206,7 @@ function KpiCardPreview({ shape }: { shape: { props: any } }) {
 }
 
 function GenericPreview({ item }: { item: ComponentLibraryItem }) {
-	const shapeCount = item.shapes.length
+	const shapeCount = item.content?.shapes.length || 0
 	return (
 		<div className="generic-preview">
 			<div className="generic-preview-icon">📦</div>

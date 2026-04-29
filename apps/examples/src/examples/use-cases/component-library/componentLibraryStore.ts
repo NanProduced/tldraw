@@ -1,19 +1,22 @@
-import { Editor, TLShape, createShapeId } from 'tldraw'
-import { IKpiCardShape } from './KpiCardShapeUtil'
+import { Editor, TLContent, createShapeId } from 'tldraw'
 
 const STORAGE_KEY = 'tldraw-component-library'
+
+export interface DefaultKpiCardConfig {
+	title: string
+	value: string
+	trend: 'up' | 'down' | 'neutral'
+	trendValue: string
+	color: string
+}
 
 export interface ComponentLibraryItem {
 	id: string
 	name: string
 	createdAt: number
-	shapes: TLShape[]
-	bounds: {
-		minX: number
-		minY: number
-		maxX: number
-		maxY: number
-	}
+	isDefault?: boolean
+	defaultConfig?: DefaultKpiCardConfig
+	content?: TLContent
 }
 
 export function getComponentLibrary(): ComponentLibraryItem[] {
@@ -35,27 +38,14 @@ export function saveComponentLibrary(items: ComponentLibraryItem[]): void {
 	}
 }
 
-export function addComponent(name: string, shapes: TLShape[]): ComponentLibraryItem | null {
-	if (shapes.length === 0) return null
-
-	let minX = Infinity, minY = Infinity
-	let maxX = -Infinity, maxY = -Infinity
-
-	shapes.forEach((shape) => {
-		const x = shape.x
-		const y = shape.y
-		minX = Math.min(minX, x)
-		minY = Math.min(minY, y)
-		maxX = Math.max(maxX, x + (shape.props as { w?: number }).w || x + 100)
-		maxY = Math.max(maxY, y + (shape.props as { h?: number }).h || y + 100)
-	})
+export function addComponent(name: string, content: TLContent): ComponentLibraryItem | null {
+	if (!content || !content.shapes || content.shapes.length === 0) return null
 
 	const item: ComponentLibraryItem = {
 		id: createShapeId().toString(),
 		name: name.trim() || `Component ${Date.now()}`,
 		createdAt: Date.now(),
-		shapes: JSON.parse(JSON.stringify(shapes)),
-		bounds: { minX, minY, maxX, maxY },
+		content: JSON.parse(JSON.stringify(content)),
 	}
 
 	const items = getComponentLibrary()
@@ -63,16 +53,6 @@ export function addComponent(name: string, shapes: TLShape[]): ComponentLibraryI
 	saveComponentLibrary(items)
 
 	return item
-}
-
-export function updateComponent(id: string, name: string): boolean {
-	const items = getComponentLibrary()
-	const index = items.findIndex((item) => item.id === id)
-	if (index === -1) return false
-
-	items[index] = { ...items[index], name: name.trim() }
-	saveComponentLibrary(items)
-	return true
 }
 
 export function deleteComponent(id: string): boolean {
@@ -84,94 +64,50 @@ export function deleteComponent(id: string): boolean {
 	return true
 }
 
-export function getDefaultComponents(): ComponentLibraryItem[] {
-	const defaultKpiCardShapes: IKpiCardShape[] = [
-		{
-			id: createShapeId(),
-			typeName: 'shape',
-			type: 'kpi-card',
-			x: 0,
-			y: 0,
-			rotation: 0,
-			index: 'a1',
-			parentId: 'page:page' as any,
-			isLocked: false,
-			props: {
-				w: 240,
-				h: 120,
-				color: 'blue',
-				title: 'Monthly Revenue',
-				value: '$45,231',
-				trend: 'up',
-				trendValue: '+12.5%',
-			},
+const DEFAULT_KPI_CARDS: ComponentLibraryItem[] = [
+	{
+		id: 'default-kpi-card-1',
+		name: 'KPI Card - Revenue Up',
+		createdAt: 0,
+		isDefault: true,
+		defaultConfig: {
+			title: 'Monthly Revenue',
+			value: '$45,231',
+			trend: 'up',
+			trendValue: '+12.5%',
+			color: 'blue',
 		},
-	]
+	},
+	{
+		id: 'default-kpi-card-2',
+		name: 'KPI Card - Users Down',
+		createdAt: 0,
+		isDefault: true,
+		defaultConfig: {
+			title: 'Active Users',
+			value: '8,542',
+			trend: 'down',
+			trendValue: '-3.2%',
+			color: 'red',
+		},
+	},
+	{
+		id: 'default-kpi-card-3',
+		name: 'KPI Card - Conversion Neutral',
+		createdAt: 0,
+		isDefault: true,
+		defaultConfig: {
+			title: 'Conversion Rate',
+			value: '4.8%',
+			trend: 'neutral',
+			trendValue: '0.1%',
+			color: 'orange',
+		},
+	},
+]
 
-	return [
-		{
-			id: 'default-kpi-card-1',
-			name: 'KPI Card - Revenue Up',
-			createdAt: 0,
-			shapes: defaultKpiCardShapes,
-			bounds: {
-				minX: 0,
-				minY: 0,
-				maxX: 240,
-				maxY: 120,
-			},
-		},
-		{
-			id: 'default-kpi-card-2',
-			name: 'KPI Card - Users Down',
-			createdAt: 0,
-			shapes: [
-				{
-					...defaultKpiCardShapes[0],
-					id: createShapeId(),
-					props: {
-						...defaultKpiCardShapes[0].props,
-						title: 'Active Users',
-						value: '8,542',
-						trend: 'down' as const,
-						trendValue: '-3.2%',
-						color: 'red',
-					},
-				},
-			],
-			bounds: {
-				minX: 0,
-				minY: 0,
-				maxX: 240,
-				maxY: 120,
-			},
-		},
-		{
-			id: 'default-kpi-card-3',
-			name: 'KPI Card - Conversion Neutral',
-			createdAt: 0,
-			shapes: [
-				{
-					...defaultKpiCardShapes[0],
-					id: createShapeId(),
-					props: {
-						...defaultKpiCardShapes[0].props,
-						title: 'Conversion Rate',
-						value: '4.8%',
-						trend: 'neutral' as const,
-						trendValue: '0.1%',
-						color: 'orange',
-					},
-				},
-			],
-			bounds: {
-				minX: 0,
-				minY: 0,
-				maxX: 240,
-				maxY: 120,
-			},
-		},
-	]
+export function getDefaultComponents(): ComponentLibraryItem[] {
+	return DEFAULT_KPI_CARDS
 }
 
 export function getAllComponents(): ComponentLibraryItem[] {
@@ -183,69 +119,37 @@ export function getAllComponents(): ComponentLibraryItem[] {
 export function instantiateComponent(
 	editor: Editor,
 	component: ComponentLibraryItem,
-	targetX: number,
-	targetY: number
+	point: { x: number; y: number }
 ): void {
-	const { shapes, bounds } = component
-	const centerX = (bounds.minX + bounds.maxX) / 2
-	const centerY = (bounds.minY + bounds.maxY) / 2
+	if (component.isDefault && component.defaultConfig) {
+		const config = component.defaultConfig
+		const shapeId = createShapeId()
 
-	const offsetX = targetX - centerX
-	const offsetY = targetY - centerY
-
-	const oldToNewIdMap = new Map<string, string>()
-
-	shapes.forEach((shape) => {
-		const newId = createShapeId()
-		oldToNewIdMap.set(shape.id, newId)
-	})
-
-	editor.run(() => {
-		const newShapes = shapes.map((shape) => {
-			const newId = oldToNewIdMap.get(shape.id)!
-
-			let newParentId = shape.parentId
-			if (oldToNewIdMap.has(shape.parentId)) {
-				newParentId = oldToNewIdMap.get(shape.parentId)!
-			}
-
-			return {
-				...shape,
-				id: newId,
-				x: shape.x + offsetX,
-				y: shape.y + offsetY,
-				parentId: newParentId,
-			}
+		editor.run(() => {
+			editor.markHistoryStoppingPoint('create default kpi card')
+			editor.createShapes([
+				{
+					id: shapeId,
+					type: 'kpi-card',
+					x: point.x - 120,
+					y: point.y - 60,
+					props: {
+						w: 240,
+						h: 120,
+						color: config.color,
+						title: config.title,
+						value: config.value,
+						trend: config.trend,
+						trendValue: config.trendValue,
+					},
+				},
+			])
+			editor.select(shapeId)
 		})
-
-		editor.markHistoryStoppingPoint('create component shapes')
-		editor.createShapes(newShapes)
-	})
-}
-
-export function serializeSelectedShapes(editor: Editor): TLShape[] {
-	const selectedShapeIds = editor.getSelectedShapeIds()
-	if (selectedShapeIds.length === 0) return []
-
-	const shapes: TLShape[] = []
-	const shapeIdSet = new Set(selectedShapeIds)
-
-	selectedShapeIds.forEach((id) => {
-		const shape = editor.getShape(id)
-		if (shape) {
-			shapes.push(shape)
-
-			const childIds = editor.getSortedChildIdsForParent(shape.id)
-			childIds.forEach((childId) => {
-				if (!shapeIdSet.has(childId)) {
-					const childShape = editor.getShape(childId)
-					if (childShape) {
-						shapes.push(childShape)
-					}
-				}
-			})
-		}
-	})
-
-	return shapes
+	} else if (component.content) {
+		editor.putContentOntoCurrentPage(component.content, {
+			point,
+			select: true,
+		})
+	}
 }
