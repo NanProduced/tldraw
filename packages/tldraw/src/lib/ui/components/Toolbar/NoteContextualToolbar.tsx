@@ -15,31 +15,20 @@ import {
 	groupNotesByColor,
 	sortNotesWithAnimation,
 } from '../../../utils/note-organization/noteOrganization'
-import { TldrawUiButton } from '../primitives/Button/TldrawUiButton'
-import { TldrawUiButtonIcon } from '../primitives/Button/TldrawUiButtonIcon'
 import { TldrawUiContextualToolbar } from '../primitives/TldrawUiContextualToolbar'
 import { TldrawUiToolbarButton } from '../primitives/TldrawUiToolbar'
+import { TldrawUiButtonIcon } from '../primitives/Button/TldrawUiButtonIcon'
 
 function getSelectedNoteIds(editor: Editor): TLShapeId[] {
-	return editor
-		.getSelectedShapeIds()
-		.filter((id) => {
-			const shape = editor.getShape(id)
-			return shape && shape.type === 'note'
-		})
-}
-
-function getSelectionBounds(editor: Editor): Box | undefined {
 	const selectedIds = editor.getSelectedShapeIds()
-	if (selectedIds.length === 0) return undefined
+	if (selectedIds.length < 2) return []
 
-	const bounds = selectedIds
-		.map((id) => editor.getShapePageBounds(id))
-		.filter((b): b is Box => b !== undefined)
+	const allAreNotes = selectedIds.every((id) => {
+		const shape = editor.getShape(id)
+		return shape && shape.type === 'note'
+	})
 
-	if (bounds.length === 0) return undefined
-
-	return Box.Common(bounds)
+	return allAreNotes ? selectedIds : []
 }
 
 const SORT_ORDERS = [
@@ -61,7 +50,9 @@ export function NoteContextualToolbar() {
 	const hasMultipleNotes = selectedNoteIds.length >= 2
 
 	const getSelectionBoundsCallback = useCallback(() => {
-		return getSelectionBounds(editor)
+		const fullBounds = editor.getSelectionScreenBounds()
+		if (!fullBounds) return undefined
+		return new Box(fullBounds.x, fullBounds.y, fullBounds.width, 0)
 	}, [editor])
 
 	const handleGridAlign = useCallback(() => {
