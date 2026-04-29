@@ -1,0 +1,264 @@
+.component-library-panel {
+	position: absolute;
+	top: 64px;
+	left: 0;
+	width: 280px;
+	height: calc(100% - 64px);
+	background: var(--color-background);
+	border-right: 1px solid var(--color-panel-foreground);
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	z-index: 100;
+}
+
+.component-library-panel > * {
+	flex-shrink: 0;
+}
+
+.component-library-header {
+	padding: 16px 16px 8px;
+	border-bottom: 1px solid var(--color-panel-foreground);
+}
+
+.component-library-header h3 {
+	margin: 0;
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--color-text);
+}
+
+.component-library-search {
+	padding: 8px 12px;
+	border-bottom: 1px solid var(--color-panel-foreground);
+}
+
+.component-library-grid {
+	flex: 1;
+	overflow-y: auto;
+	padding: 12px;
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 10px;
+}
+
+.component-card {
+	display: flex;
+	flex-direction: column;
+	background: var(--color-low-contrast-background);
+	border: 1px solid var(--color-panel-foreground);
+	border-radius: 8px;
+	overflow: hidden;
+	cursor: grab;
+	transition: border-color 0.15s ease, box-shadow 0.15s ease;
+	user-select: none;
+}
+
+.component-card:hover {
+	border-color: var(--color-selected-foreground);
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.component-card:active {
+	cursor: grabbing;
+}
+
+.component-card-preview {
+	height: 80px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 8px;
+	background: var(--color-background);
+	border-bottom: 1px solid var(--color-panel-foreground);
+	overflow: hidden;
+}
+
+.component-card-preview-content {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transform-origin: center center;
+}
+
+.component-card-footer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 6px 8px;
+	gap: 4px;
+}
+
+.component-card-name {
+	flex: 1;
+	font-size: 11px;
+	color: var(--color-text);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	font-weight: 500;
+}
+
+.component-card-delete {
+	opacity: 0;
+	transition: opacity 0.15s ease;
+}
+
+.component-card:hover .component-card-delete {
+	opacity: 1;
+}
+
+.component-card-delete:hover {
+	color: var(--color-selected-foreground) !important;
+}
+
+.component-library-empty {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+	text-align: center;
+	color: var(--color-muted);
+}
+
+.component-library-empty p {
+	margin: 4px 0;
+	font-size: 13px;
+}
+
+.component-library-hint {
+	font-size: 12px !important;
+	opacity: 0.7;
+	margin-top: 8px !important;
+}
+
+.component-drag-preview {
+	pointer-events: none;
+	z-index: 1000;
+}
+
+.component-drag-preview-content {
+	width: 200px;
+	height: 100px;
+	background: var(--color-low-contrast-background);
+	border: 2px solid var(--color-selected-foreground);
+	border-radius: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 8px;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+	opacity: 0.9;
+}
+
+.kpi-card-preview {
+	width: 100%;
+	height: 100%;
+	border-radius: 6px;
+	padding: 8px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	gap: 4px;
+}
+
+.kpi-card-preview-title {
+	font-size: 8px;
+	color: var(--color-muted);
+	font-weight: 500;
+	text-transform: uppercase;
+	letter-spacing: 0.3px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.kpi-card-preview-row {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 4px;
+}
+
+.kpi-card-preview-value {
+	font-size: 14px;
+	font-weight: 700;
+	color: var(--color-text);
+	line-height: 1;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.kpi-card-preview-trend {
+	font-size: 9px;
+	font-weight: 600;
+	white-space: nowrap;
+}
+
+.generic-preview {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 4px;
+}
+
+.generic-preview-icon {
+	font-size: 24px;
+	opacity: 0.6;
+}
+
+.generic-preview-count {
+	font-size: 10px;
+	color: var(--color-muted);
+}
+
+.save-component-dialog {
+	padding: 16px;
+	min-width: 300px;
+}
+
+.save-component-dialog h3 {
+	margin: 0 0 16px;
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--color-text);
+}
+
+.save-component-dialog-input {
+	margin-bottom: 16px;
+}
+
+.save-component-dialog-input label {
+	display: block;
+	font-size: 12px;
+	color: var(--color-muted);
+	margin-bottom: 4px;
+}
+
+.save-component-dialog-input input {
+	width: 100%;
+	padding: 8px 12px;
+	font-size: 13px;
+	border: 1px solid var(--color-panel-foreground);
+	border-radius: 6px;
+	background: var(--color-background);
+	color: var(--color-text);
+	outline: none;
+	transition: border-color 0.15s ease;
+}
+
+.save-component-dialog-input input:focus {
+	border-color: var(--color-selected-foreground);
+}
+
+.save-component-dialog-footer {
+	display: flex;
+	justify-content: flex-end;
+	gap: 8px;
+}
