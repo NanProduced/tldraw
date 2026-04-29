@@ -356,19 +356,6 @@ export class NoteShapeUtil extends ShapeUtil<TLNoteShape> {
 			[textFirstEditedBy, isEmpty, this.editor]
 		)
 
-		const handleVote = useCallback(() => {
-			this.editor.markHistoryStoppingPoint('vote for note')
-			this.editor.updateShapes([
-				{
-					id: shape.id,
-					type: shape.type,
-					props: {
-						voteCount: (shape.props.voteCount || 0) + 1,
-					},
-				},
-			])
-		}, [this.editor, shape.id, shape.type, shape.props.voteCount])
-
 		return (
 			<>
 				<div
@@ -500,43 +487,6 @@ export class NoteShapeUtil extends ShapeUtil<TLNoteShape> {
 						/>
 					)}
 				</div>
-
-				{isSelected && (
-					<div
-						style={{
-							position: 'absolute',
-							top: -28 * scale,
-							left: '50%',
-							transform: 'translateX(-50%)',
-							display: 'flex',
-							gap: 4 * scale,
-							zIndex: 100,
-						}}
-					>
-						<TldrawUiTooltip content={`投票 (${voteCount})`} side="top">
-							<button
-								onClick={handleVote}
-								style={{
-									padding: `${4 * scale}px ${8 * scale}px`,
-									backgroundColor: 'var(--color-low)',
-									border: '1px solid var(--color-muted-1)',
-									borderRadius: 4 * scale,
-									fontSize: 11 * scale,
-									fontFamily: dv.labelFontFamily,
-									cursor: 'pointer',
-									display: 'flex',
-									alignItems: 'center',
-									gap: 4 * scale,
-									whiteSpace: 'nowrap',
-								}}
-							>
-								<span>⭐</span>
-								<span>投票</span>
-								{voteCount > 0 && <span style={{ opacity: 0.6 }}>({voteCount})</span>}
-							</button>
-						</TldrawUiTooltip>
-					</div>
-				)}
 
 				{'url' in shape.props && shape.props.url && <HyperlinkButton url={shape.props.url} />}
 			</>
