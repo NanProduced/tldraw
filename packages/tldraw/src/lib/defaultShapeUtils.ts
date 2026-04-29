@@ -1,5 +1,6 @@
 import { ArrowShapeUtil } from './shapes/arrow/ArrowShapeUtil'
 import { BookmarkShapeUtil } from './shapes/bookmark/BookmarkShapeUtil'
+import { CardStackShapeUtil } from './shapes/card-stack/CardStackShapeUtil'
 import { DrawShapeUtil } from './shapes/draw/DrawShapeUtil'
 import { EmbedShapeUtil } from './shapes/embed/EmbedShapeUtil'
 import { FrameShapeUtil } from './shapes/frame/FrameShapeUtil'
@@ -15,6 +16,7 @@ import { VideoShapeUtil } from './shapes/video/VideoShapeUtil'
 export const defaultShapeUtils = [
 	TextShapeUtil,
 	BookmarkShapeUtil,
+	CardStackShapeUtil,
 	DrawShapeUtil,
 	GeoShapeUtil,
 	NoteShapeUtil,

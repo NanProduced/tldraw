@@ -66,6 +66,12 @@ export interface TLNoteShapeProps {
 	scale: number
 	/** User ID of the person who first edited the note text */
 	textFirstEditedBy: string | null
+	/** Vote count for the note (used for prioritization in brainstorming) */
+	voteCount: number
+	/** Auto-extracted tags from note content using TF-IDF */
+	tags: string[]
+	/** Timestamp when the note was created (milliseconds since epoch) */
+	createdAt: number
 }
 
 /**
@@ -133,6 +139,9 @@ export const noteShapeProps: RecordProps<TLNoteShape> = {
 	richText: richTextValidator,
 	scale: T.nonZeroNumber,
 	textFirstEditedBy: T.string.nullable(),
+	voteCount: T.positiveNumber,
+	tags: T.arrayOf(T.string),
+	createdAt: T.positiveNumber,
 }
 
 const Versions = createShapePropsMigrationIds('note', {
@@ -148,6 +157,7 @@ const Versions = createShapePropsMigrationIds('note', {
 	AddRichTextAttrs: 10,
 	AddFirstEditedBy: 11,
 	MakeFontSizeAdjustmentRatio: 12,
+	AddVoteCountTagsCreatedAt: 13,
 })
 
 /**
@@ -290,6 +300,19 @@ export const noteShapeMigrations = createShapePropsMigrationSequence({
 			},
 			down: (props) => {
 				props.fontSizeAdjustment = 0
+			},
+		},
+		{
+			id: Versions.AddVoteCountTagsCreatedAt,
+			up: (props) => {
+				props.voteCount = 0
+				props.tags = []
+				props.createdAt = Date.now()
+			},
+			down: (props) => {
+				delete props.voteCount
+				delete props.tags
+				delete props.createdAt
 			},
 		},
 	],

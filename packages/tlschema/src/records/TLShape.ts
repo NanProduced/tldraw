@@ -12,6 +12,7 @@ import { TLPropsMigrations } from '../recordsWithProps'
 import { TLArrowShape } from '../shapes/TLArrowShape'
 import { TLBaseShape, createShapeValidator } from '../shapes/TLBaseShape'
 import { TLBookmarkShape } from '../shapes/TLBookmarkShape'
+import { TLCardStackShape } from '../shapes/TLCardStackShape'
 import { TLDrawShape } from '../shapes/TLDrawShape'
 import { TLEmbedShape } from '../shapes/TLEmbedShape'
 import { TLFrameShape } from '../shapes/TLFrameShape'
@@ -47,6 +48,7 @@ import { TLPageId } from './TLPage'
 export type TLDefaultShape =
 	| TLArrowShape
 	| TLBookmarkShape
+	| TLCardStackShape
 	| TLDrawShape
 	| TLEmbedShape
 	| TLFrameShape

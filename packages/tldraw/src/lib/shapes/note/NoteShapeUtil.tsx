@@ -31,7 +31,7 @@ import {
 	useEditor,
 	useValue,
 } from '@tldraw/editor'
-import { useCallback, useContext } from 'react'
+import { useCallback, useContext, useState } from 'react'
 import { startEditingShapeWithRichText } from '../../tools/SelectTool/selectHelpers'
 import { TldrawUiTooltip } from '../../ui/components/primitives/TldrawUiTooltip'
 import { TranslationsContext } from '../../ui/hooks/useTranslation/useTranslation'
@@ -178,6 +178,9 @@ export class NoteShapeUtil extends ShapeUtil<TLNoteShape> {
 			url: '',
 			scale: 1,
 			textFirstEditedBy: null,
+			voteCount: 0,
+			tags: [],
+			createdAt: Date.now(),
 		}
 	}
 
@@ -318,7 +321,7 @@ export class NoteShapeUtil extends ShapeUtil<TLNoteShape> {
 
 	component(shape: TLNoteShape) {
 		const { id, type, props } = shape
-		const { scale, richText, fontSizeAdjustment, textFirstEditedBy } = props
+		const { scale, richText, fontSizeAdjustment, textFirstEditedBy, voteCount, tags } = props
 
 		const handleKeyDown = useNoteKeydownHandler(id)
 
@@ -334,7 +337,6 @@ export class NoteShapeUtil extends ShapeUtil<TLNoteShape> {
 		const nw = dv.noteWidth * scale
 		const nh = getNoteHeight(shape, dv.noteHeight)
 
-		// Shadows are hidden when zoomed out far enough or in dark mode
 		let hideShadows = useEfficientZoomThreshold(0.25 / scale)
 		if (colorMode === 'dark') hideShadows = true
 
@@ -353,6 +355,19 @@ export class NoteShapeUtil extends ShapeUtil<TLNoteShape> {
 			},
 			[textFirstEditedBy, isEmpty, this.editor]
 		)
+
+		const handleVote = useCallback(() => {
+			this.editor.markHistoryStoppingPoint('vote for note')
+			this.editor.updateShapes([
+				{
+					id: shape.id,
+					type: shape.type,
+					props: {
+						voteCount: (shape.props.voteCount || 0) + 1,
+					},
+				},
+			])
+		}, [this.editor, shape.id, shape.type, shape.props.voteCount])
 
 		return (
 			<>
@@ -384,6 +399,77 @@ export class NoteShapeUtil extends ShapeUtil<TLNoteShape> {
 							</div>
 						</TldrawUiTooltip>
 					)}
+
+					{voteCount > 0 && (
+						<div
+							style={{
+								position: 'absolute',
+								top: 4 * scale,
+								right: 4 * scale,
+								display: 'flex',
+								alignItems: 'center',
+								gap: 2 * scale,
+								padding: `2px ${4 * scale}px`,
+								backgroundColor: 'rgba(255, 215, 0, 0.9)',
+								borderRadius: 10 * scale,
+								fontSize: 10 * scale,
+								fontWeight: 'bold',
+								color: '#333',
+								fontFamily: dv.labelFontFamily,
+								zIndex: 10,
+							}}
+						>
+							<span style={{ fontSize: 10 * scale }}>⭐</span>
+							<span>{voteCount}</span>
+						</div>
+					)}
+
+					{tags && tags.length > 0 && (
+						<div
+							style={{
+								position: 'absolute',
+								bottom: 4 * scale,
+								right: 4 * scale,
+								display: 'flex',
+								flexWrap: 'wrap',
+								gap: 2 * scale,
+								justifyContent: 'flex-end',
+								maxWidth: '60%',
+								zIndex: 10,
+							}}
+						>
+							{tags.slice(0, 3).map((tag, i) => (
+								<span
+									key={i}
+									style={{
+										padding: `1px ${3 * scale}px`,
+										backgroundColor: 'rgba(0, 0, 0, 0.1)',
+										borderRadius: 3 * scale,
+										fontSize: 8 * scale,
+										color: dv.labelColor,
+										fontFamily: dv.labelFontFamily,
+										opacity: 0.7,
+									}}
+								>
+									#{tag}
+								</span>
+							))}
+							{tags.length > 3 && (
+								<span
+									style={{
+										padding: `1px ${2 * scale}px`,
+										fontSize: 8 * scale,
+										color: dv.labelColor,
+										fontFamily: dv.labelFontFamily,
+										opacity: 0.5,
+									}}
+								>
+									+{tags.length - 3}
+								</span>
+							)}
+						</div>
+					)}
+
 					{(isSelected || isReadyForEditing || !isEmpty) && (
 						<RichTextLabel
 							shapeId={id}
@@ -414,6 +500,44 @@ export class NoteShapeUtil extends ShapeUtil<TLNoteShape> {
 						/>
 					)}
 				</div>
+
+				{isSelected && (
+					<div
+						style={{
+							position: 'absolute',
+							top: -28 * scale,
+							left: '50%',
+							transform: 'translateX(-50%)',
+							display: 'flex',
+							gap: 4 * scale,
+							zIndex: 100,
+						}}
+					>
+						<TldrawUiTooltip content={`投票 (${voteCount})`} side="top">
+							<button
+								onClick={handleVote}
+								style={{
+									padding: `${4 * scale}px ${8 * scale}px`,
+									backgroundColor: 'var(--color-low)',
+									border: '1px solid var(--color-muted-1)',
+									borderRadius: 4 * scale,
+									fontSize: 11 * scale,
+									fontFamily: dv.labelFontFamily,
+									cursor: 'pointer',
+									display: 'flex',
+									alignItems: 'center',
+									gap: 4 * scale,
+									whiteSpace: 'nowrap',
+								}}
+							>
+								<span>⭐</span>
+								<span>投票</span>
+								{voteCount > 0 && <span style={{ opacity: 0.6 }}>({voteCount})</span>}
+							</button>
+						</TldrawUiTooltip>
+					</div>
+				)}
+
 				{'url' in shape.props && shape.props.url && <HyperlinkButton url={shape.props.url} />}
 			</>
 		)
@@ -506,7 +630,18 @@ export class NoteShapeUtil extends ShapeUtil<TLNoteShape> {
 	}
 
 	override onBeforeCreate(next: TLNoteShape) {
-		return this.getNoteSizeAdjustments(next)
+		let shape = next
+		if (!shape.props.createdAt || shape.props.createdAt === 0) {
+			shape = {
+				...shape,
+				props: {
+					...shape.props,
+					createdAt: Date.now(),
+				},
+			}
+		}
+		const sizeAdjustments = this.getNoteSizeAdjustments(shape)
+		return sizeAdjustments ?? shape
 	}
 
 	override onBeforeUpdate(prev: TLNoteShape, next: TLNoteShape) {
