@@ -1,18 +1,16 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import {
-	Box,
+	BaseFrameLikeShapeUtil,
 	Geometry2d,
 	Group2d,
 	IndexKey,
 	Rectangle2d,
-	SafeId,
-	ShapeUtil,
+	ShapeOptionsWithDisplayValues,
+	TLBaseBoxShape,
 	TLClickEventInfo,
-	TLEventInfo,
 	TLHandle,
 	TLNoteShape,
-	TLShapeId,
-	Vec,
+	TLShape,
 	exhaustiveSwitchError,
 	getColorValue,
 	lerp,
@@ -22,19 +20,15 @@ import {
 } from '@tldraw/editor'
 import classNames from 'classnames'
 import React, { useCallback } from 'react'
-import { DefaultFontFaces, getThemeFontFaces } from '../shared/defaultFonts'
-import { ShapeOptionsWithDisplayValues, getDisplayValues } from '../shared/getDisplayValues'
-import {
-	renderHtmlFromRichTextForMeasurement,
-	renderPlaintextFromRichText,
-} from '../../utils/text/richText'
-import { TldrawUiTooltip } from '../../ui/components/primitives/TldrawUiTooltip'
 import {
 	TLCardStackShape,
 	TLCardStackShapeProps,
 	cardStackShapeMigrations,
 	cardStackShapeProps,
 } from '@tldraw/tlschema'
+import { getDisplayValues } from '../shared/getDisplayValues'
+import { renderPlaintextFromRichText } from '../../utils/text/richText'
+import { TldrawUiTooltip } from '../../ui/components/primitives/TldrawUiTooltip'
 
 /** @public */
 export interface CardStackShapeUtilDisplayValues {
@@ -55,7 +49,7 @@ const STACK_OFFSET = 4
 const MAX_FAN_ANGLE = 60
 
 /** @public */
-export class CardStackShapeUtil extends ShapeUtil<TLCardStackShape> {
+export class CardStackShapeUtil extends BaseFrameLikeShapeUtil<TLCardStackShape> {
 	static override type = 'card-stack' as const
 	static override props = cardStackShapeProps
 	static override migrations = cardStackShapeMigrations
@@ -577,12 +571,12 @@ function FanLayout({
 	)
 }
 
-function getNotePreviewText(editor: typeof useEditor extends () => infer E ? E : never, shape: TLNoteShape): string {
+function getNotePreviewText(editor: ReturnType<typeof useEditor>, shape: TLNoteShape): string {
 	const text = renderPlaintextFromRichText(editor, shape.props.richText)
 	return text || ''
 }
 
-function getNoteColor(editor: typeof useEditor extends () => infer E ? E : never, shape: TLNoteShape): string {
+function getNoteColor(editor: ReturnType<typeof useEditor>, shape: TLNoteShape): string {
 	const theme = editor.getCurrentTheme()
 	const colorMode = editor.user.getIsDarkMode() ? 'dark' : 'light'
 	const colors = theme.colors[colorMode]
