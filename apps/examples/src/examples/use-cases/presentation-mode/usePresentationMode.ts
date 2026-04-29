@@ -63,25 +63,49 @@ export function updateFrameOrder(editor: Editor, frameId: TLShapeId, newOrder: n
 	])
 }
 
+export function getAllArrowShapes(editor: Editor): TLArrowShape[] {
+	const pageId = editor.getCurrentPageId()
+	if (!pageId) return []
+
+	return editor
+		.getSortedChildIdsForParent(pageId)
+		.map((id) => editor.getShape(id))
+		.filter((shape): shape is TLArrowShape => shape?.type === 'arrow')
+}
+
+export function getArrowBindings(editor: Editor, arrow: TLArrowShape): { start?: TLArrowBinding; end?: TLArrowBinding } {
+	const bindings = editor.getBindingsFromShape(arrow.id, 'arrow') as TLArrowBinding[]
+	return {
+		start: bindings.find((b) => b.props.terminal === 'start'),
+		end: bindings.find((b) => b.props.terminal === 'end'),
+	}
+}
+
 export function getOutgoingBranches(editor: Editor, frameId: TLShapeId): FrameBranch[] {
-	const outgoingBindings = editor.getBindingsFromShape(frameId, 'arrow') as TLArrowBinding[]
-	if (outgoingBindings.length === 0) return []
+	const arrows = getAllArrowShapes(editor)
+	if (arrows.length === 0) return []
 
 	const branches: FrameBranch[] = []
 
-	for (const binding of outgoingBindings) {
-		if (binding.props.terminal === 'start') continue
+	for (const arrow of arrows) {
+		const bindings = getArrowBindings(editor, arrow)
 
-		const arrowShape = editor.getShape(binding.fromId) as TLArrowShape | undefined
-		if (!arrowShape) continue
+		if (!bindings.start || bindings.start.toId !== frameId) continue
 
-		const targetShape = editor.getShape(binding.toId)
+		if (!bindings.end) continue
+
+		const targetShape = editor.getShape(bindings.end.toId)
 		if (!targetShape || targetShape.type !== 'frame') continue
 
+		const targetFrame = targetShape as TLFrameShape
+
+		const alreadyExists = branches.some((b) => b.targetFrameId === targetFrame.id)
+		if (alreadyExists) continue
+
 		branches.push({
-			targetFrameId: targetShape.id,
-			targetFrameName: (targetShape as TLFrameShape).props.name || 'Frame',
-			arrowId: arrowShape.id,
+			targetFrameId: targetFrame.id,
+			targetFrameName: targetFrame.props.name || 'Frame',
+			arrowId: arrow.id,
 		})
 	}
 
